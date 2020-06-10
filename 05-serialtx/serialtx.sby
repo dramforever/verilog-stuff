@@ -1,0 +1,14 @@
+[options]
+mode prove
+depth 21
+
+[engines]
+smtbmc z3
+
+[script]
+read -formal -defer -sv serialtx.sv
+chparam -set DIVIDE 2 serialtx
+prep -top serialtx
+
+[files]
+serialtx.sv

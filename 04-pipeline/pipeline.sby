@@ -1,0 +1,16 @@
+[options]
+mode prove
+depth 30
+
+[engines]
+smtbmc z3
+
+[script]
+read -formal -sv counter.sv
+read -formal -defer -sv pipeline.sv
+chparam -set CLOCK_FREQ 2 pipeline
+prep -top pipeline
+
+[files]
+counter.sv
+pipeline.sv

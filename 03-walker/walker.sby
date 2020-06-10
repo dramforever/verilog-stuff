@@ -1,0 +1,16 @@
+[options]
+mode prove
+depth 2
+
+[engines]
+smtbmc z3
+
+[script]
+read -formal -sv counter.sv
+read -formal -defer -sv walker.sv
+chparam -set CLOCK_FREQ 1024 walker
+prep -top walker
+
+[files]
+counter.sv
+walker.sv

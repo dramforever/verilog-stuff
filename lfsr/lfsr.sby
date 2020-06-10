@@ -1,0 +1,13 @@
+[options]
+mode bmc
+depth 2
+
+[engines]
+smtbmc z3
+
+[script]
+read -formal -sv lfsr.sv
+prep -top lfsr
+
+[files]
+lfsr.sv
