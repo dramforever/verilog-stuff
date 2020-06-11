@@ -124,6 +124,10 @@ module serialtx #(
             assert((wb_stb && ! wb_stall) <= wb_ack);
 
     always @(*)
+        if (busy)
+            assert(unfinished == 0 || wb_ack);
+
+    always @(*)
         if (wb_ack)
             assert(unfinished > 0);
 
