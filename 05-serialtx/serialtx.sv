@@ -26,16 +26,7 @@ module serialtx #(
     logic busy;
     assign busy = state != 0;
 
-    assign wb_stall = busy && wb_cyc;
-
-    initial wb_ack = 1'b0;
-    always @(posedge clk) begin
-        if (rst) begin
-            wb_ack <= 1'b0;
-        end else begin
-            wb_ack <= wb_stb && ! busy;
-        end
-    end
+    assign wb_stall = busy && wb_we;
 
     logic [31:0] num_bytes;
     initial num_bytes = 0;
@@ -51,14 +42,25 @@ module serialtx #(
     logic div_overflow;
     assign div_overflow = div_counter + 1'b1 == DIVIDE[DIV_WIDTH - 1 : 0];
 
+    initial wb_ack = 1'b0;
+
     always @(posedge clk) begin
+        wb_ack <= 1'b0;
+
         if (rst) begin
             state <= 0;
             div_counter <= 0;
             num_bytes <= 0;
-        end else if (wb_cyc && ! busy && wb_stb && wb_we) begin
-            state <= 1;
-            data <= wb_data_w;
+        end else if (wb_cyc && wb_stb) begin
+            if (wb_we) begin
+                if (! busy) begin
+                    state <= 1;
+                    data <= wb_data_w;
+                    wb_ack <= 1'b1;
+                end
+            end else begin
+                wb_ack <= 1'b1;
+            end
         end else if (state != 0) begin
             if (div_overflow) begin
                 if (state == 1) begin
