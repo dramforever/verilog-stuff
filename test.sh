@@ -1,12 +1,24 @@
 #!/usr/bin/env bash
 
 set -eo pipefail
+shopt -s nullglob
 
 root="$(realpath "$(dirname "$0")")"
 projects=(01-wiredemo 02-blinky 03-walker 04-pipeline 05-serialtx lfsr)
 
+max_len=0
+for pr in "${projects[@]}"; do
+    if [[ "${#pr}" -gt "$max_len" ]]; then
+        max_len="${#pr}"
+    fi
+done
+
 ok=()
 failed=()
+
+filter() {
+    while read line; do printf "%-${max_len}s> %s\n" "$pr" "$line"; done
+}
 
 for pr in "${projects[@]}"; do
     cur_fail=0
@@ -14,22 +26,17 @@ for pr in "${projects[@]}"; do
 
     cd "$root/$pr"
 
-    (bash -c '
-    shopt -s nullglob
     cur_fail=0
     if [[ -f CMakeLists.txt ]]; then
-        ( cmake -GNinja -Bbuild -S. \
+        (( cmake -GNinja -Bbuild -S. \
             && cmake --build build --clean-first \
-            && build/V*) || cur_fail=1
+            && build/V*) |& filter) || cur_fail=1
     fi
 
     for sby_file in *.sby; do
         sby="${sby_file%.sby}"
-        sby -f -d "verify.$sby" "$sby.sby" || cur_fail=1
+        (sby -f -d "verify.$sby" "$sby.sby" |& filter) || cur_fail=1
     done
-
-    [[ "$cur_fail" -eq 1 ]] && exit 1
-    ' || cur_fail=1 ) | while read line; do echo "$pr> $line"; done
 
     if [[ "$cur_fail" -eq 1 ]]; then
         echo "=== $pr FAILED ===" >&2
