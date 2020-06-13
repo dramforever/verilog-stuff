@@ -42,27 +42,29 @@ module serialtx #(
     logic div_overflow;
     assign div_overflow = div_counter + 1'b1 == DIVIDE[DIV_WIDTH - 1 : 0];
 
-    logic ack_w, ack_r;
-    initial ack_w = 1'b0;
-    initial ack_r = 1'b0;
-    assign wb_ack = wb_we ? ack_w : ack_r;
+    initial wb_ack = 1'b0;
 
     always @(posedge clk) begin
-        ack_w <= 1'b0;
-        ack_r <= 1'b0;
+        wb_ack <= 1'b0;
 
         if (rst) begin
             state <= 0;
             div_counter <= 0;
             num_bytes <= 0;
         end else begin
-            if (! busy) begin
-                if (wb_stb && wb_we) begin
-                    state <= 1;
-                    data <= wb_data_w;
-                    ack_w <= 1'b1;
+            if (wb_stb) begin
+                if (wb_we) begin
+                    if (! busy) begin
+                        state <= 1;
+                        data <= wb_data_w;
+                        wb_ack <= 1'b1;
+                    end
+                end else begin
+                    wb_ack <= 1'b1;
                 end
-            end else begin
+            end
+
+            if (state != 0) begin
                 if (div_overflow) begin
                     if (state == 1) begin
                         state <= 3;
@@ -79,10 +81,6 @@ module serialtx #(
                 end else begin
                     div_counter <= div_counter + 1'd1;
                 end
-            end
-
-            if (! wb_we && wb_stb) begin
-                ack_r <= 1'b1;
             end
         end
     end
