@@ -58,7 +58,7 @@ public:
                             std::cout << format("[%9d] UART: 0x%02x\n")
                                 % to_ns(time) % int(buffer);
                     } else {
-                        std::cout << format("[%9d] UART: framing error %1$x\n")
+                        std::cout << format("[%9d] UART: framing error %02x\n")
                             % to_ns(time) % int(buffer);
                     }
                     reading = false;
@@ -145,10 +145,10 @@ public:
         uint32_t res = module->wb_data_r;
         module->wb_cyc = 0;
 
-        std::cout << format("[%9d] wb_read(0x%x) = 0x%x: stall=%d wait=%d\n")
-            % to_ns(time())
-            % addr % res
-            % stall_clk % wait_clk;
+        // std::cout << format("[%9d] wb_read(0x%x) = 0x%x: stall=%d wait=%d\n")
+        //     % to_ns(time())
+        //     % addr % res
+        //     % stall_clk % wait_clk;
 
         return res;
     }
@@ -213,5 +213,9 @@ int main(int argc, char *argv[]) {
         dut.wb_write(0, c);
     }
 
-    std::cout << format("%1% bytes sent") % dut.wb_read(0);
+    std::cout << format("Current: %1% bytes sent\n") % dut.wb_read(0);
+
+    while (dut.wb_read(0) < 5);
+
+    std::cout << format("Done, %1% bytes sent") % dut.wb_read(0);
 }
