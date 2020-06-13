@@ -5,8 +5,6 @@ set -eo pipefail
 root="$(realpath "$(dirname "$0")")"
 projects=(01-wiredemo 02-blinky 03-walker 04-pipeline 05-serialtx lfsr)
 
-shopt -s nullglob
-
 ok=()
 failed=()
 
@@ -16,7 +14,9 @@ for pr in "${projects[@]}"; do
 
     cd "$root/$pr"
 
-    bash -c '
+    (bash -c '
+    shopt -s nullglob
+    cur_fail=0
     if [[ -f CMakeLists.txt ]]; then
         ( cmake -GNinja -Bbuild -S. \
             && cmake --build build --clean-first \
@@ -27,7 +27,9 @@ for pr in "${projects[@]}"; do
         sby="${sby_file%.sby}"
         sby -f -d "verify.$sby" "$sby.sby" || cur_fail=1
     done
-    ' | while read line; do echo "$pr> $line"; done
+
+    [[ "$cur_fail" -eq 1 ]] && exit 1
+    ' || cur_fail=1 ) | while read line; do echo "$pr> $line"; done
 
     if [[ "$cur_fail" -eq 1 ]]; then
         echo "=== $pr FAILED ===" >&2
