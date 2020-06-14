@@ -35,7 +35,14 @@ for pr in "${projects[@]}"; do
 
     for sby_file in *.sby; do
         sby="${sby_file%.sby}"
-        (sby -f -d "verify.$sby" "$sby.sby" |& filter) || cur_fail=1
+        tasks=($(sby "$sby_file" --dumptasks))
+        if [[ "${#tasks[@]}" -eq 0 ]]; then
+            (sby -f -d "verify.$sby" "$sby.sby" |& filter) || cur_fail=1
+        else
+            for task in "${tasks[@]}"; do
+                (sby -f -d "verify.$sby.$task" "$sby.sby" "$task" |& filter) || cur_fail=1
+            done
+        fi
     done
 
     if [[ "$cur_fail" -eq 1 ]]; then

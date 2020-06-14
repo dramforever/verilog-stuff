@@ -1,13 +1,23 @@
+[tasks]
+prove
+cover
+
 [options]
+prove:
 mode prove
 depth 2
+
+cover:
+mode cover
+depth 50
+--
 
 [engines]
 smtbmc z3
 
 [script]
 read -formal -defer -sv serialtx.sv
-chparam -set DIVIDE 868 serialtx
+cover: chparam -set DIVIDE 2 serialtx
 prep -top serialtx
 
 [files]

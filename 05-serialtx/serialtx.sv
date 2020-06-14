@@ -26,8 +26,6 @@ module serialtx #(
     logic busy;
     assign busy = state != 0;
 
-    assign wb_stall = busy && wb_we;
-
     logic [31:0] num_bytes;
     initial num_bytes = 0;
 
@@ -42,6 +40,10 @@ module serialtx #(
     logic div_overflow;
     assign div_overflow = div_counter + 1'b1 == DIVIDE[DIV_WIDTH - 1 : 0];
 
+    logic last_cycle;
+    assign last_cycle = state == 2 && div_overflow && wb_stb && wb_we;
+    assign wb_stall = busy && ! last_cycle && wb_we;
+
     initial wb_ack = 1'b0;
 
     always @(posedge clk) begin
@@ -52,26 +54,30 @@ module serialtx #(
             div_counter <= 0;
             num_bytes <= 0;
         end else begin
-            if (wb_stb) begin
-                if (wb_we) begin
-                    if (! busy) begin
-                        state <= 1;
-                        data <= wb_data_w;
-                        wb_ack <= 1'b1;
-                    end
-                end else begin
-                    wb_ack <= 1'b1;
-                end
+            if (wb_stb && ! wb_we) begin
+                wb_ack <= 1'b1;
             end
 
-            if (state != 0) begin
+            if (state == 0) begin
+                if (wb_stb && wb_we) begin
+                    state <= 1;
+                    data <= wb_data_w;
+                    wb_ack <= 1'b1;
+                end
+            end else begin
                 if (div_overflow) begin
                     if (state == 1) begin
                         state <= 3;
                     end else if (state == FRAME + 2) begin
                         state <= 2;
                     end else if (state == 2) begin
-                        state <= 0;
+                        if (wb_stb && wb_we) begin
+                            state <= 1;
+                            data <= wb_data_w;
+                            wb_ack <= 1'b1;
+                        end else begin
+                            state <= 0;
+                        end
                         num_bytes <= num_bytes + 32'd1;
                     end else begin
                         state <= state + 1'd1;
@@ -148,8 +154,19 @@ module serialtx #(
             assert(! wb_stall);
         end
 
+    always @(posedge clk)
+        if (past_valid && $past(wb_cyc && wb_stb && wb_stall)) begin
+            assume($stable(wb_cyc));
+            assume($stable(wb_stb));
+            assume($stable(wb_we));
+            assume($stable(wb_data_w));
+        end
+
     always @(*)
         if (state == 0)
             assert(uart_tx);
+
+    always @(posedge clk)
+        cover(num_bytes == 2 && state == 0);
 `endif
 endmodule
