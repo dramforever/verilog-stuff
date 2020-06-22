@@ -3,16 +3,16 @@
         {
             "name": "Linux",
             "defines": [],
-            "compilerPath": "/nix/store/fb30zc52va0g99q8qgv7kx4ngq163pii-gcc-wrapper-9.3.0/bin/gcc",
+            "compilerPath": "/nix/store/lbcfr7fs6kn9mzygk0mv8mhp5x9csfyz-gcc-wrapper-9.3.0/bin/gcc",
             "cStandard": "c11",
             "cppStandard": "c++14",
             "intelliSenseMode": "gcc-x64",
             "includePath": [
                 "${default}",
                 "${workspaceFolder}/**",
-                "/nix/store/ifcn665vbcxrg1fai5m1hsbqcmvb5lnj-verilator-4.034/share/verilator/include",
-                "/nix/store/cim96aypbpy9li2bjfhjamrljjnwk48g-zlib-1.2.11-dev/include",
-                "/nix/store/58256d05kd7s8hcigbvrc0r61n2jfrzg-boost-1.69.0-dev/include"
+                "/nix/store/bj7dcp08jmrvb8vmlnck6v3piycg1ba5-verilator-4.036/share/verilator/include",
+                "/nix/store/smdxarkghqnr0hr6l9lvgnivzgpr8xr7-zlib-1.2.11-dev/include",
+                "/nix/store/bql77zmmnpqnwlxkvwssvni443dvdzck-abseil-cpp-20200225.2/include"
             ]
         }
     ],

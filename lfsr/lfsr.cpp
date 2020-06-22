@@ -4,13 +4,12 @@
 #include <iostream>
 #include <chrono>
 
-#include <boost/format.hpp>
+#include "absl/strings/str_format.h"
 
 #include "Vlfsr.h"
 #include "verilated_fst_c.h"
 
 using std::chrono::nanoseconds;
-using boost::format;
 
 using Module = Vlfsr;
 
@@ -102,9 +101,10 @@ int main(int argc, char *argv[]) {
     for (size_t i = 0; i < 50; i ++) {
         dut->in = dist(rng);
         dut.tick();
-        std::cout << format("[%1$9d] in=%2% out_fib=%3% out_gal=%4% %5%\n")
-            % to_ns(dut.time()) % int(dut->in)
-            % int(dut->out_fib) % int(dut->out_gal)
-            % (dut->out_fib == dut->out_gal ? "ok" : "NOT EQUAL");
+        std::cout << absl::StreamFormat("[%9d] in=%d out_fib=%d out_gal=%d %s\n",
+            to_ns(dut.time()), int(dut->in),
+            int(dut->out_fib), int(dut->out_gal),
+            (dut->out_fib == dut->out_gal) ? "ok" : "NOT EQUAL"
+        );
     }
 }

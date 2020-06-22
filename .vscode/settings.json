@@ -1,6 +1,5 @@
 {
     "files.associations": {
-        "*.v": "coq",
         "cctype": "cpp",
         "clocale": "cpp",
         "cmath": "cpp",

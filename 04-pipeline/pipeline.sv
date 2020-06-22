@@ -20,7 +20,7 @@ module pipeline #(
     logic counter_clear;
 
     counter #(
-        .PERIOD(2)
+        .PERIOD(CLOCK_FREQ)
     ) counter_0 (
         .clk, .rst,
         .clear(counter_clear),

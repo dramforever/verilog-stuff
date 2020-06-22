@@ -5,14 +5,13 @@
 #include <chrono>
 #include <cctype>
 
-#include <boost/format.hpp>
+#include "absl/strings/str_format.h"
 
 #include "Vserialtx.h"
 #include "verilated_fst_c.h"
 
 using std::chrono::nanoseconds;
 using namespace std::chrono_literals;
-using boost::format;
 
 using Module = Vserialtx;
 
@@ -52,14 +51,24 @@ public:
                 } else if (index == CHAR_BIT) {
                     if (data) {
                         if (isprint(buffer))
-                            std::cout << format("[%9d] UART: 0x%02x [%c]\n")
-                                % to_ns(time) % int(buffer) % char(buffer);
+                            std::cout << absl::StreamFormat(
+                                "[%9d] UART: 0x%02x [%c]\n",
+                                to_ns(time),
+                                int(buffer),
+                                char(buffer)
+                            );
                         else
-                            std::cout << format("[%9d] UART: 0x%02x\n")
-                                % to_ns(time) % int(buffer);
+                            std::cout << absl::StreamFormat(
+                                "[%9d] UART: 0x%02x\n",
+                                to_ns(time),
+                                int(buffer)
+                            );
                     } else {
-                        std::cout << format("[%9d] UART: framing error %02x\n")
-                            % to_ns(time) % int(buffer);
+                        std::cout << absl::StreamFormat(
+                            "[%9d] UART: framing error %02x\n",
+                            to_ns(time),
+                            int(buffer)
+                        );
                     }
                     reading = false;
                 }
@@ -145,11 +154,6 @@ public:
         uint32_t res = module->wb_data_r;
         module->wb_cyc = 0;
 
-        // std::cout << format("[%9d] wb_read(0x%x) = 0x%x: stall=%d wait=%d\n")
-        //     % to_ns(time())
-        //     % addr % res
-        //     % stall_clk % wait_clk;
-
         return res;
     }
 
@@ -175,11 +179,11 @@ public:
         module->wb_cyc = 0;
         module->wb_we = 0;
 
-        std::cout << format("[%9d] wb_write(0x%x, 0x%x): stall=%d wait=%d\n")
-            % to_ns(time())
-            % addr % val
-            % stall_clk % wait_clk;
-
+        std::cout << absl::StreamFormat("[%9d] wb_write(0x%x, 0x%x): stall=%d wait=%d\n",
+            to_ns(time()),
+            addr, val,
+            stall_clk, wait_clk
+        );
     }
 
     virtual ~DUT() {
@@ -208,14 +212,17 @@ int main(int argc, char *argv[]) {
     std::uniform_int_distribution<size_t> dist(256);
 
     for (char c : { 'H', 'e', 'l', 'l', 'o' }) {
-        std::cout << format("[%9d] Sending %c\n")
-            % to_ns(dut.time()) % c;
+        std::cout << absl::StreamFormat(
+            "[%9d] Sending %c\n",
+            to_ns(dut.time()),
+            c
+        );
         dut.wb_write(0, c);
     }
 
-    std::cout << format("Current: %1% bytes sent\n") % dut.wb_read(0);
+    std::cout << absl::StreamFormat("Current: %d bytes sent\n", dut.wb_read(0));
 
     while (dut.wb_read(0) < 5);
 
-    std::cout << format("Done, %1% bytes sent") % dut.wb_read(0);
+    std::cout << absl::StreamFormat("Done, %d bytes sent", dut.wb_read(0));
 }

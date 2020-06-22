@@ -28,7 +28,8 @@ for pr in "${projects[@]}"; do
 
     cur_fail=0
     if [[ -f CMakeLists.txt ]]; then
-        (( cmake -GNinja -Bbuild -S. \
+        (( rm -rf build \
+            && cmake -GNinja -Bbuild -S. \
             && cmake --build build --clean-first \
             && build/V*) |& filter) || cur_fail=1
     fi

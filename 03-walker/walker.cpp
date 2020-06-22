@@ -4,13 +4,12 @@
 #include <iostream>
 #include <chrono>
 
-#include <boost/format.hpp>
+#include "absl/strings/str_format.h"
 
 #include "Vwalker.h"
 #include "verilated_fst_c.h"
 
 using std::chrono::nanoseconds;
-using boost::format;
 
 template<typename Rep, typename Period>
 nanoseconds::rep to_ns(
@@ -100,9 +99,11 @@ int main(int argc, char *argv[]) {
         if (dut->o_leds != last_leds) {
             last_leds = dut->o_leds;
 
-            std::cout << format("[%1$9d] %2$8b\n")
-                % dut.counter()
-                % last_leds;
+            std::cout << absl::StreamFormat(
+                "[%9d] %02x\n",
+                dut.counter(),
+                last_leds
+            );
         }
 
         if (dut.time() > 20s) {

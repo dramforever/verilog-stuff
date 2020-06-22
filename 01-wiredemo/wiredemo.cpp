@@ -3,12 +3,10 @@
 #include <random>
 #include <iostream>
 
-#include <boost/format.hpp>
+#include "absl/strings/str_format.h"
 
 #include "Vwiredemo.h"
 #include "verilated_fst_c.h"
-
-using boost::format;
 
 int main(int argc, char *argv[]) {
     Verilated::commandArgs(argc, argv);

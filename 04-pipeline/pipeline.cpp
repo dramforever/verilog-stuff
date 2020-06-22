@@ -4,13 +4,12 @@
 #include <iostream>
 #include <chrono>
 
-#include <boost/format.hpp>
+#include "absl/strings/str_format.h"
 
 #include "Vpipeline.h"
 #include "verilated_fst_c.h"
 
 using std::chrono::nanoseconds;
-using boost::format;
 
 using Module = Vpipeline;
 
@@ -100,7 +99,11 @@ public:
         while (! module->wb_ack) tick(), n_wait ++;
         module->wb_cyc = 0;
         module->wb_we = 0;
-        std::cout << format("write stall=%1% wait=%2%\n") % n_stall % n_wait;
+        std::cout << absl::StreamFormat(
+            "write stall=%d wait=%d\n",
+            n_stall,
+            n_wait
+        );
     }
 
     virtual ~DUT() {
@@ -131,7 +134,7 @@ int main(int argc, char *argv[]) {
     std::uniform_int_distribution<size_t> dist(13'000, 15'000);
 
     for (size_t i = 0; i < 10; i ++) {
-        std::cout << format("Request %1%\n") % i;
+        std::cout << absl::StreamFormat("Request %d\n", i);
         size_t wait = dist(rng);
         for (size_t j = 0; j < wait; j ++)
             dut.tick();
